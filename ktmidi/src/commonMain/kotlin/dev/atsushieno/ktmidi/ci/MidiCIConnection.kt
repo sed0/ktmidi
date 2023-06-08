@@ -2,16 +2,11 @@ package dev.atsushieno.ktmidi.ci
 
 import dev.atsushieno.ktmidi.MidiCIProtocolType
 import dev.atsushieno.ktmidi.MidiCIProtocolValue
-import dev.atsushieno.ktmidi.MidiInput
-import dev.atsushieno.ktmidi.MidiOutput
-import dev.atsushieno.ktmidi.OnMidiReceivedEventListener
 import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
-import kotlin.time.TimeMark
 import kotlin.time.TimeSource
-import kotlin.time.compareTo
 
 data class DeviceDetails(val manufacturer: Int = 0, val family: Short = 0, val familyModelNumber: Short = 0, val softwareRevisionLevel: Int = 0) {
     companion object {
