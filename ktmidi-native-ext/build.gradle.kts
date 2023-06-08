@@ -9,53 +9,35 @@ kotlin {
         iosX64(),
         iosArm64(),
         iosSimulatorArm64()
-    ).onEach {
+    )
+
+    iosTargets.forEach {
         it.binaries {
             framework { baseName = "library" }
         }
     }
 
-    val hostOs = System.getProperty("os.name")
-    val isMingwX64 = hostOs.startsWith("Windows")
-    val isMacOSX64 = hostOs == "Mac OS X"
-    val isLinuxX64 = hostOs == "Linux"
-    val nativeTarget = when {
-        isMacOSX64 -> macosX64("native") {
-            binaries {
-                staticLib {}
-                sharedLib {}
-            }
+    val nativeTargets = listOf(
+        macosX64(),
+        macosArm64(),
+        linuxX64(),
+        mingwX64(),
+    ) + iosTargets
+
+    nativeTargets.forEach {
+        it.binaries {
+            staticLib()
+            sharedLib()
         }
-        isLinuxX64 -> linuxX64("native") {
-            binaries {
-                staticLib {}
-                sharedLib {}
-            }
-        }
-        isMingwX64 -> mingwX64("native") {
-            binaries {
-                staticLib {}
-                sharedLib {}
-            }
-        }
-        else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
-    }
-    nativeTarget.apply {
-        compilations.getByName("main") {
-            cinterops {
-                val rtmidi by creating {
-                    packageName("dev.atsushieno.rtmidicinterop")
-                    includeDirs.allHeaders("../external/rtmidi")
-                }
-            }
+        val rtmidi by it.compilations.getByName("main").cinterops.creating {
+            packageName("dev.atsushieno.rtmidicinterop")
+            includeDirs.allHeaders("../external/rtmidi")
         }
     }
-    
+
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-                implementation("io.ktor:ktor-io:2.1.0")
                 implementation(project(":ktmidi"))
             }
         }
@@ -63,23 +45,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
             }
-        }
-        val nativeMain by getting
-        val nativeTest by getting
-        val iosMain by creating {
-            dependsOn(sourceSets["commonMain"])
-            sourceSets["iosX64Main"].dependsOn(this)
-            sourceSets["iosArm64Main"].dependsOn(this)
-            sourceSets["iosSimulatorArm64Main"].dependsOn(this)
-        }
-        val iosTest by creating {
-            dependsOn(sourceSets["commonTest"])
-            sourceSets["iosX64Test"].dependsOn(this)
-            sourceSets["iosArm64Test"].dependsOn(this)
-            sourceSets["iosSimulatorArm64Test"].dependsOn(this)
         }
     }
 }
