@@ -47,36 +47,26 @@ kotlin {
         iosX64(),
         iosArm64(),
         iosSimulatorArm64()
-    ).onEach {
+    )
+
+    iosTargets.forEach {
         it.binaries {
             framework { baseName = "library" }
         }
     }
 
-    val hostOs = System.getProperty("os.name")
-    val isMingwX64 = hostOs.startsWith("Windows")
-    val isMacOSX64 = hostOs == "Mac OS X"
-    val isLinuxX64 = hostOs == "Linux"
-    val nativeTarget = when {
-        isMacOSX64 -> macosX64("native") {
-            binaries {
-                staticLib {}
-                sharedLib {}
-            }
+    val nativeTargets = listOf(
+        macosX64(),
+        macosArm64(),
+        linuxX64(),
+        mingwX64()
+    )
+
+    nativeTargets.forEach {
+        it.binaries {
+            staticLib()
+            sharedLib()
         }
-        isLinuxX64 -> linuxX64("native") {
-            binaries {
-                staticLib {}
-                sharedLib {}
-            }
-        }
-        isMingwX64 -> mingwX64("native") {
-            binaries {
-                staticLib {}
-                sharedLib {}
-            }
-        }
-        else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
     }
 
     sourceSets {
@@ -122,19 +112,46 @@ kotlin {
                 implementation(kotlin("test-js"))
             }
         }
-        val nativeMain by getting
-        val nativeTest by getting
+
+        val macosX64Main by getting
+        val macosX64Test by getting
+        val macosArm64Main by getting
+        val macosArm64Test by getting
+        val linuxX64Main by getting
+        val linuxX64Test by getting
+        val mingwX64Main by getting
+        val mingwX64Test by getting
+        val nativeMain by creating {
+            dependsOn(commonMain)
+            macosX64Main.dependsOn(this)
+            macosArm64Main.dependsOn(this)
+            linuxX64Main.dependsOn(this)
+            mingwX64Main.dependsOn(this)
+        }
+        val nativeTest by creating {
+            dependsOn(commonTest)
+            macosX64Test.dependsOn(this)
+            macosArm64Test.dependsOn(this)
+            linuxX64Test.dependsOn(this)
+            mingwX64Test.dependsOn(this)
+        }
+        val iosX64Main by getting
+        val iosX64Test by getting
+        val iosArm64Main by getting
+        val iosArm64Test by getting
+        val iosSimulatorArm64Main by getting
+        val iosSimulatorArm64Test by getting
         val iosMain by creating {
-            dependsOn(sourceSets["commonMain"])
-            sourceSets["iosX64Main"].dependsOn(this)
-            sourceSets["iosArm64Main"].dependsOn(this)
-            sourceSets["iosSimulatorArm64Main"].dependsOn(this)
+            dependsOn(commonMain)
+            iosX64Main.dependsOn(this)
+            iosArm64Main.dependsOn(this)
+            iosSimulatorArm64Main.dependsOn(this)
         }
         val iosTest by creating {
-            dependsOn(sourceSets["commonTest"])
-            sourceSets["iosX64Test"].dependsOn(this)
-            sourceSets["iosArm64Test"].dependsOn(this)
-            sourceSets["iosSimulatorArm64Test"].dependsOn(this)
+            dependsOn(commonTest)
+            iosX64Test.dependsOn(this)
+            iosArm64Test.dependsOn(this)
+            iosSimulatorArm64Test.dependsOn(this)
         }
     }
 }
