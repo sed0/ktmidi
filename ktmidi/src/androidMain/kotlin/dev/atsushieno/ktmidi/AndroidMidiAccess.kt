@@ -10,8 +10,9 @@ class AndroidMidiAccess(applicationContext: Context) : MidiAccess() {
         get() = "AndroidSDK"
 
     internal val manager: MidiManager = applicationContext.getSystemService(Service.MIDI_SERVICE) as MidiManager
-    private val ports : List<AndroidPortDetails> = manager.devices.flatMap { d -> d.ports.map { port -> Pair(d, port) } }
-        .map { pair -> AndroidPortDetails(pair.first, pair.second) }
+    private val ports : List<AndroidPortDetails>
+        get() = manager.devices.flatMap { d -> d.ports.map { port -> Pair(d, port) } }
+            .map { pair -> AndroidPortDetails(pair.first, pair.second) }
 
     internal val openDevices = mutableListOf<MidiDevice>()
 
@@ -99,8 +100,8 @@ private class AndroidMidiInput(portDetails: AndroidPortDetails, private val impl
 
     class Receiver(private val parent: AndroidMidiInput) : MidiReceiver() {
 
-        override fun onSend(msg: ByteArray?, offset: Int, count: Int, timestamp: Long) {
-            parent.messageReceived.onEventReceived(msg!!, timestamp.toInt(), offset, count.toLong())
+        override fun onSend(msg: ByteArray, offset: Int, count: Int, timestamp: Long) {
+            parent.messageReceived.onEventReceived(msg, offset, count, timestamp)
         }
     }
 
