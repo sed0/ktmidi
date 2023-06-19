@@ -31,7 +31,7 @@ kotlin {
         }
         val rtmidi by it.compilations.getByName("main").cinterops.creating {
             packageName("dev.atsushieno.rtmidicinterop")
-            includeDirs.allHeaders("../external/rtmidi")
+            includeDirs.allHeaders("../external/rtmidi/dist-shared/include")
         }
     }
 
